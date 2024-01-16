@@ -14,6 +14,7 @@ func main() {
 		log.Fatalf("failed to init tg bot: %v", err)
 	}
 
+	// TODO: graceful shutdown
 	err = tgBot.Listen(context.Background())
 	if err != nil {
 		log.Fatalf("error while listening tgbot: %v", err)
