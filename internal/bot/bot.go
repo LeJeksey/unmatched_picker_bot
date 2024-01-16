@@ -3,8 +3,11 @@ package bot
 import (
 	"context"
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"log"
 	"strconv"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
 	"unmatched_picker/internal/bot/commands"
 	"unmatched_picker/internal/domain"
 )
@@ -31,7 +34,7 @@ func NewBot(apiToken string) (*Bot, error) {
 	}, nil
 }
 
-func (b *Bot) Listen(ctx context.Context) error {
+func (b *Bot) Listen(ctx context.Context) {
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 30
 
@@ -48,35 +51,38 @@ func (b *Bot) Listen(ctx context.Context) error {
 
 			answerMsg, err := b.handleCommand(update)
 			if err != nil {
-				return fmt.Errorf("failed to handle command: %w", err)
+				log.Println(fmt.Errorf("failed to handle command: %w", err))
+				continue
 			}
 
 			if _, err := b.api.Send(answerMsg); err != nil {
-				return fmt.Errorf("failed to send answer: %w", err)
+				log.Println(fmt.Errorf("failed to send answer: %w", err))
+				continue
 			}
 
 		} else if update.CallbackQuery != nil {
 			// Respond to the callback query, telling Telegram to show the user a message with the data received.
 			callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
 			if _, err := b.api.Request(callback); err != nil {
-				return fmt.Errorf("failed to send callback: %w", err)
+				log.Println(fmt.Errorf("failed to send callback: %w", err))
+				continue
 			}
 
 			if isDistributionCallback(update) {
 				err := b.handleDistributionCallback(update)
 				if err != nil {
-					return fmt.Errorf("failed to handle distribution callback: %w", err)
+					log.Println(fmt.Errorf("failed to handle distribution callback: %w", err))
+					continue
 				}
 			} else {
 				err := b.handleEditHeroesListCallback(update)
 				if err != nil {
-					return fmt.Errorf("failed to handle edit heroes list callback: %w", err)
+					log.Println(fmt.Errorf("failed to handle edit heroes list callback: %w", err))
+					continue
 				}
 			}
 		}
 	}
-
-	return nil
 }
 
 func isDistributionCallback(update tgbotapi.Update) bool {

@@ -15,10 +15,7 @@ func main() {
 	}
 
 	// TODO: graceful shutdown
-	err = tgBot.Listen(context.Background())
-	if err != nil {
-		log.Fatalf("error while listening tgbot: %v", err)
-	}
+	tgBot.Listen(context.Background())
 
 	log.Println("stopped")
 
